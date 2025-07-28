@@ -1,7 +1,6 @@
 #pragma once
 
 #include <bit>
-#include <cassert>
 #include <functional>
 #include <ostream>
 #include <vector>
