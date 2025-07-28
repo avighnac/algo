@@ -12,6 +12,9 @@ struct xor_t {
   constexpr xor_t operator+(const xor_t &other) const {
     return x ^ other.x;
   }
+  constexpr xor_t operator-(const xor_t &other) const {
+    return x ^ other.x;
+  }
   constexpr operator T() const { return x; }
   constexpr bool operator==(const xor_t &other) const { return x == other.x; }
   constexpr bool operator!=(const xor_t &other) const { return x != other.x; }
