@@ -4,3 +4,9 @@
 #include "max_t.hpp"
 #include "xor_t.hpp"
 #include "segment_tree.hpp"
+
+#include "dense_map.hpp"
+#include "serialized_array.hpp"
+#include "traits.hpp"
+#include "point.hpp"
+#include "graph.hpp"

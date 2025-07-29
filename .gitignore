@@ -1,5 +1,7 @@
 .vscode/
+.idea/
 *.dSYM/
 *.out
 *.txt
 test.cpp
+*.DS_Store
