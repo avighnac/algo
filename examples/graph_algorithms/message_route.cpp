@@ -7,7 +7,7 @@ int main() {
   int n, m;
   std::cin >> n >> m;
  
-  graph<int, int> g(n + 1);
+  generic_graph<int, int> g(n + 1);
   for (int i = 0, u, v; i < m; ++i) {
     std::cin >> u >> v;
     g.add_edge(u, v);

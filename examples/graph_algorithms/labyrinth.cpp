@@ -6,7 +6,7 @@ using namespace algo;
 int main() {
   int r, c;
   std::cin >> r >> c;
-  graph<point, int> g(r * c, point_serializer{c});
+  generic_graph<point, int> g(r * c, point_serializer{c});
   std::vector<std::string> map(r);
   for (auto &i : map) {
     std::cin >> i;

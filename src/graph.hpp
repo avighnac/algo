@@ -13,11 +13,11 @@ template <typename T>
   requires std::is_integral_v<T>
 class graph {
 private:
-  int n;
-  std::vector<std::vector<int>> adj;
+  std::size_t n;
+  std::vector<std::vector<T>> adj;
 
 public:
-  graph(int n) : n(n), adj(n) {}
+  graph(std::size_t n) : n(n), adj(n) {}
 
   void add_edge(const T &u, const T &v) {
     adj[u].push_back(v);
@@ -26,7 +26,7 @@ public:
   struct bfs_result {
     std::vector<int> dist;
     std::vector<T> par;
-    bfs_result(int n) : dist(n), par(n) {}
+    bfs_result(std::size_t n) : dist(n), par(n) {}
   };
 
   /// @brief Performs a breadth-first search from the given starting node; computes the shortest

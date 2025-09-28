@@ -9,7 +9,8 @@ namespace algo {
 /// @brief An iterative segment tree with a fixed size.
 /// @tparam T Works on any type with a defined associative (but not necessarily
 /// commutative) operator+, for example, `int` or `algo::min_t`.
-template <typename T> class segment_tree {
+template <typename T>
+class segment_tree {
 private:
   std::size_t _n, n;
   std::vector<T> seg;
@@ -44,12 +45,26 @@ public:
       seg[i] = seg[2 * i] + seg[2 * i + 1];
     }
   }
+  segment_tree(const std::vector<T> &vals) : _n(vals.size()), n(std::bit_ceil(_n)), seg(2 * n) {
+    set(vals);
+  }
 
   /// @brief Sets the value at the i-th index to x.
   /// @param i The index at which the value is being modified.
   /// @param x The new value at that index.
   void set(std::size_t i, const T &x) {
     for (seg[i += n] = x, i /= 2; i > 0; i /= 2) {
+      seg[i] = seg[2 * i] + seg[2 * i + 1];
+    }
+  }
+
+  /// @brief Bulk-assigns values to all leaves.
+  /// @param vals A vector of size `n`, where `vals[i]` is the value for index `i`.
+  void set(const std::vector<T> &vals) {
+    for (std::size_t i = 0; i < _n; ++i) {
+      seg[n + i] = vals[i];
+    }
+    for (std::size_t i = n - 1; i > 0; --i) {
       seg[i] = seg[2 * i] + seg[2 * i + 1];
     }
   }
