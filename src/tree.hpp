@@ -26,8 +26,11 @@ public:
     adj[v].push_back(u);
   }
 
+  /// @brief Returns the adjacency list of the tree.
+  const std::vector<std::vector<T>> &adjacency() const { return adj; }
+
   template <typename enter, typename child_before, typename child_after, typename exit>
-  void dfs(enter &&on_enter, child_before &&on_before, child_after &&on_after, exit &&on_exit, const T &start) const {
+  void dfs(enter &&on_enter, child_before &&on_before, child_after &&on_after, exit &&on_exit, const T &root) const {
     auto dfs = [&](auto &&self, const T &u, const T &p) -> void {
       if constexpr (!std::is_same_v<enter, std::nullptr_t>) {
         on_enter(u, p);
@@ -48,7 +51,7 @@ public:
         on_exit(u, p);
       }
     };
-    dfs(dfs, start, -1);
+    dfs(dfs, root, -1);
   }
 
   /// @brief Depth-first search with the `child_after` hook.
@@ -57,7 +60,7 @@ public:
   /// @param start
   template <typename child>
   void dfs(child &&child_after, const T &start) const {
-    dfs(nullptr, nullptr, child_after, nullptr, start);
+    dfs(nullptr, nullptr, std::forward<child>(child_after), nullptr, start);
   }
 
   /// @brief Computes the parent of each node when rooting the tree at @p root.
@@ -175,7 +178,7 @@ public:
       /// @param k The number of edges to traverse upward.
       /// @return The aggregated value under monoid `M` along the path of `k` edges
       /// from `u` toward its ancestor at depth `depth[u] - k`.
-      M accum(T u, int k) const {
+      M accum(const T &u, int k) const {
         M ans = {};
         for (int bt = 0; bt < binary_lift_size; ++bt) {
           if (k & 1 << bt) {
@@ -209,7 +212,7 @@ public:
     /// @brief Creates an augmented lift view with monoid accumulation support.
     /// @tparam M The monoid type used for aggregation (must define operator+ and an identity element).
     /// @param vals A vector of initial values (one per node), used as the base case for building the aggregation table.
-    /// @return A `with<M>` object that supports accumulation and path queries under the monoid `M`.
+    /// @return A `with<M>` object that supports accumulation and static queries under the monoid `M`.
     template <typename M>
     augmented<M> with(const std::vector<M> &vals) {
       return augmented{*this, vals};
@@ -299,6 +302,130 @@ public:
     flatten_view<M> fv{*this, root};
     fv.set(vals);
     return fv;
+  }
+
+  template <typename M>
+  class hld_view {
+  private:
+    const tree<T> &g;
+    std::vector<int> start, top, par, depth;
+    segment_tree<M> seg;
+
+    template <typename Fn>
+    M query_path(T u, T v, Fn &&handle_last) const {
+      M ans = {};
+      while (top[u] != top[v]) {
+        if (depth[top[u]] < depth[top[v]]) {
+          std::swap(u, v);
+        }
+        ans = ans + seg.query(start[top[u]], start[u]);
+        u = par[top[u]];
+      }
+      if (depth[u] > depth[v]) {
+        std::swap(u, v);
+      }
+      ans = ans + handle_last(start[u], start[v]);
+      return ans;
+    }
+
+  public:
+    hld_view(const tree<T> &g, const T &root) : g(g), start(g.size()), top(g.size()), par(g.par(root)), depth(g.dep(root)), seg(g.size()) {
+      std::vector<std::vector<T>> adj = g.adjacency();
+      std::vector<int> sub(g.size());
+      auto dfs1 = [&](auto &&self, T u, T p) -> void {
+        for (T &i : adj[u]) {
+          if (i == p) {
+            continue;
+          }
+          self(self, i, u);
+          sub[u] += sub[i] + 1;
+          if (sub[i] > sub[adj[u][0]]) {
+            std::swap(i, adj[u][0]);
+          }
+        }
+      };
+      int timer = 0;
+      auto dfs2 = [&](auto &&self, T u, T p) -> void {
+        start[u] = timer++;
+        for (T &i : adj[u]) {
+          if (i == p) {
+            continue;
+          }
+          top[i] = i == adj[u][0] ? top[u] : i;
+          self(self, i, u);
+        }
+      };
+      dfs1(dfs1, root, -1);
+      top[root] = root;
+      dfs2(dfs2, root, -1);
+    }
+
+    void set(std::size_t i, const M &x) {
+      seg.set(start[i], x);
+    }
+
+    /// @brief Returns the aggregate after traveling up `k` edges from `u`.
+    /// @param u The node to start at.
+    /// @param k The amount of edges to go up.
+    /// @return If `k == 0`, returns the monoid identity. Otherwise, returns the monoid aggregate for `k` edges.
+    M accum(const T &u, int k) const {
+      k = std::min(k, depth[u]);
+      M ans = M{};
+      while (k > 0 && k - (depth[u] - depth[top[u]]) >= 0) {
+        ans = ans + seg.query(start[top[u]], start[u]);
+        k -= depth[u] - depth[top[u]];
+        u = par[top[u]];
+      }
+      if (k > 0) {
+        ans = ans + seg.query(start[u] - k, start[u]);
+      }
+      return ans;
+    }
+
+    /// @brief Query the aggregate of all edges on the path between `u` and `v`.
+    /// @param u One endpoint of the path.
+    /// @param v The other endpoint of the path.
+    /// @return The monoid aggregate of edges along the unique path from `u` to `v`.
+    M query_edges(const T &u, const T &v) const {
+      return query_path(u, v, [&](int l, int r) { return seg.query(l + 1, r); });
+    }
+
+    /// @brief Query the aggregate of all nodes on the path between `u` and `v`.
+    /// @param u One endpoint of the path.
+    /// @param v The other endpoint of the path.
+    /// @return The monoid aggregate of nodes along the unique path from `u` to `v`.
+    M query_nodes(const T &u, const T &v) const {
+      return query_path(u, v, [&](int l, int r) { return seg.query(l, r); });
+    }
+
+    /// @brief Proxy for convenient node access.
+    struct accessor {
+      hld_view &hv;
+      T u;
+      accessor(hld_view &hv, T u) : hv(hv), u(u) {}
+      accessor &operator=(const M &x) {
+        hv.set(u, x);
+        return *this;
+      }
+      accessor &operator+=(const M &x) { return *this = M(*this) + x; }
+      accessor &operator-=(const M &x) { return *this = M(*this) - x; }
+      operator M() const { return hv.seg.at(hv.start[u]); }
+      friend std::ostream &operator<<(std::ostream &os, const accessor &acc) {
+        return os << M(acc);
+      }
+    };
+
+    /// @brief Returns an accessor for node u.
+    accessor operator[](const T &u) { return accessor(*this, u); }
+  };
+
+  /// @brief Builds a heavy-light decomposition view of the tree.
+  /// @tparam M The monoid type (must define `operator+` and have an identity).
+  /// @param root The root of the decomposition.
+  /// @return An `hld_view<M>` object supporting path queries and updates.
+  template <typename M>
+  hld_view<M> hld(const T &root) const {
+    return hld_view<M>{*this, root};
   }
 };
 }; // namespace algo
