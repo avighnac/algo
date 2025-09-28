@@ -83,8 +83,8 @@ public:
   /// @brief Computes the diameter of the tree by calling `depth()` twice.
   /// @return The length, in edges, of the tree's diameter.
   int diameter() const {
-    auto d1 = depth(valid_node);
-    auto d2 = depth(std::max_element(d1.begin(), d1.end()) - d1.begin());
+    auto d1 = dep(valid_node);
+    auto d2 = dep(std::max_element(d1.begin(), d1.end()) - d1.begin());
     return *std::max_element(d2.begin(), d2.end());
   }
 
