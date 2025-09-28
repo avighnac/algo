@@ -5,3 +5,4 @@
 *.txt
 test.cpp
 *.DS_Store
+expanded.cpp
