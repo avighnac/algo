@@ -9,4 +9,6 @@
 #include "serialized_array.hpp"
 #include "traits.hpp"
 #include "point.hpp"
+#include "generic_graph.hpp"
 #include "graph.hpp"
+#include "tree.hpp"
