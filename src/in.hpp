@@ -10,6 +10,7 @@
 
 #include <cctype>
 #include <charconv>
+#include <string>
 
 namespace algo {
 class in {

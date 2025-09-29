@@ -4,6 +4,7 @@
 #include "max_t.hpp"
 #include "xor_t.hpp"
 #include "segment_tree.hpp"
+#include "sparse_segment_tree.hpp"
 
 #include "dense_map.hpp"
 #include "serialized_array.hpp"
@@ -12,3 +13,5 @@
 #include "generic_graph.hpp"
 #include "graph.hpp"
 #include "tree.hpp"
+
+#include "mint.hpp"

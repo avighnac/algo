@@ -49,7 +49,7 @@ public:
     set(vals);
   }
 
-  /// @brief Sets the value at the i-th index to x.
+  /// @brief Sets the value at the `i`-th index to `x`.
   /// @param i The index at which the value is being modified.
   /// @param x The new value at that index.
   void set(std::size_t i, const T &x) {
@@ -88,11 +88,12 @@ public:
   /// false for the accumulated value over [l, r].
   /// @param l The left boundary (inclusive) from which to start the
   /// accumulation.
-  /// @param pred A monotonic predicate that returns true while the accumulated
-  /// range is valid. Must return false eventually.
-  /// @return The first index r ≥ l such that pred(accumulate(l, r)) == false.
-  /// If pred is true for all r ∈ [l, _n), returns _n.
-  std::size_t min_right(std::size_t l, const std::function<bool(T)> &t) const {
+  /// @param t A monotonic predicate that returns true while the accumulated
+  /// range is valid.
+  /// @return The first index r ≥ l such that t(accumulate(l, r)) == false.
+  /// If `t` is true for all r ∈ [l, n), returns n.
+  template <typename Fn>
+  std::size_t min_right(std::size_t l, Fn &&t) const {
     T p{};
     for (l += n; t(p + seg[l]) && l & (l + 1); l /= 2) {
       if (l & 1)
@@ -113,8 +114,7 @@ public:
 
   /// @brief Returns a read-only reference to the value at index `i`.
   /// @param i The index to access.
-  /// @return A const reference to the element at position `i` in the original
-  /// array (i.e., the leaf at `seg[n + i]`).
+  /// @return A const reference to the element at position `i` in the segment tree (i.e., the leaf at `seg[n + i]`).
   const T &at(std::size_t i) const { return seg[n + i]; }
 
   /// @brief Provides access to the element at index `i` via a proxy object.
