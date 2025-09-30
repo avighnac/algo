@@ -15,3 +15,4 @@
 #include "tree.hpp"
 
 #include "mint.hpp"
+#include "combi.hpp"

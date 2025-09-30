@@ -41,5 +41,8 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const mint &x) {
     return os << x.x;
   }
+
+  bool operator==(const mint &other) const { return x == other.x; }
+  bool operator!=(const mint &other) const { return !(*this == other); }
 };
 } // namespace algo
