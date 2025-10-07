@@ -5,6 +5,7 @@
 #include "xor_t.hpp"
 #include "segment_tree.hpp"
 #include "sparse_segment_tree.hpp"
+#include "fenwick_tree.hpp"
 
 #include "dense_map.hpp"
 #include "serialized_array.hpp"

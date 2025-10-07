@@ -1,5 +1,6 @@
 #pragma once
 
+#include "traits.hpp"
 #include <algorithm>
 #include <limits>
 #include <type_traits>
@@ -22,4 +23,7 @@ struct max_t {
   constexpr bool operator==(const max_t &other) const { return x == other.x; }
   constexpr bool operator!=(const max_t &other) const { return x != other.x; }
 };
+
+template <typename T>
+struct is_idempotent<max_t<T>> : std::true_type {};
 } // namespace algo
