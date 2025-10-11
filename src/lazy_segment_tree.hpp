@@ -57,6 +57,21 @@ private:
 
 public:
   lazy_segment_tree(std::size_t _n) : _n(_n), n(std::bit_ceil(_n)), h(std::countr_zero(n)), seg(2 * n), tag(n) {}
+  lazy_segment_tree(std::size_t _n, T x) : _n(_n), n(std::bit_ceil(_n)), h(std::countr_zero(n)), seg(2 * n), tag(n) {
+    std::vector<T> vals(n, x);
+    set(vals);
+  }
+
+  template <typename M>
+  void set(const std::vector<M> &vals) {
+    for (std::size_t i = 0; i < _n; ++i) {
+      seg[n + i] = vals[i];
+    }
+    for (std::size_t i = n - 1; i > 0; --i) {
+      seg[i] = seg[2 * i] + seg[2 * i + 1];
+    }
+    tag.assign(n, F{});
+  }
 
   void apply(std::size_t l, std::size_t r, F x) {
     push_all(l += n, r += n + 1);
@@ -84,6 +99,6 @@ public:
 
   T at(std::size_t i) { return query(i, i); }
 
-  T size() const { return _n; }
+  std::size_t size() const { return _n; }
 };
 } // namespace algo
