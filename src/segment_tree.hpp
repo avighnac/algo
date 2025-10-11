@@ -1,7 +1,6 @@
 #pragma once
 
 #include <bit>
-#include <functional>
 #include <ostream>
 #include <vector>
 
@@ -60,7 +59,8 @@ public:
 
   /// @brief Bulk-assigns values to all leaves.
   /// @param vals A vector of size `n`, where `vals[i]` is the value for index `i`.
-  void set(const std::vector<T> &vals) {
+  template <typename M>
+  void set(const std::vector<M> &vals) {
     for (std::size_t i = 0; i < _n; ++i) {
       seg[n + i] = vals[i];
     }
