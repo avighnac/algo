@@ -12,5 +12,12 @@ struct lazy_traits {
       a = a + f * len;
     }
   }
+  static void set(T &a, const F &f, int len) {
+    if constexpr (is_idempotent_v<T>) {
+      a = f;
+    } else { 
+      a = f * len;
+    }
+  }
 };
 } // namespace algo
