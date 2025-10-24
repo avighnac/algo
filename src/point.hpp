@@ -23,6 +23,7 @@ public:
 struct point_serializer {
   int cols;
   int operator()(const point &p) const { return p.x * cols + p.y; }
+  point operator()(int i) const { return {i / cols, i % cols}; }
 };
 
 template <> constexpr bool is_serializable_v<point> = true;

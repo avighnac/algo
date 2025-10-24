@@ -6,6 +6,7 @@
 #include "segment_tree.hpp"
 #include "sparse_segment_tree.hpp"
 #include "fenwick_tree.hpp"
+#include "lazy_segment_tree.hpp"
 
 #include "dense_map.hpp"
 #include "serialized_array.hpp"
@@ -17,3 +18,5 @@
 
 #include "mint.hpp"
 #include "combi.hpp"
+
+#include "dsu.hpp"
