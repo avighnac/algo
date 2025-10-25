@@ -20,3 +20,4 @@
 #include "combi.hpp"
 
 #include "dsu.hpp"
+#include "treap.hpp"
