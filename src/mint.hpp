@@ -44,5 +44,7 @@ public:
 
   bool operator==(const mint &other) const { return x == other.x; }
   bool operator!=(const mint &other) const { return !(*this == other); }
+
+  operator int64_t() const { return x; }
 };
 } // namespace algo

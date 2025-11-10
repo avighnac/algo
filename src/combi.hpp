@@ -29,6 +29,7 @@ public:
   /// @param n Non-negative integer.
   /// @return The factorial of `n`.
   const T &factorial(const int &n) const { return fact[n]; }
+  const T &inv_factorial(const int &n) const { return inv_fact[n]; }
 
   T perm(const int &n, const int &k) const {
     return fact[n] * inv_fact[n - k];
