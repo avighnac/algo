@@ -8,7 +8,7 @@ namespace algo {
 /// @brief Combinatorial utilities for types that support addition, subtraction, multiplication, and division.
 /// @tparam T Type that defines +, -, *, and / (closed under division).
 /// @tparam size Maximum value for computations.
-template <typename T, std::size_t size = 200000>
+template <typename T, std::size_t size = 200001>
 class combi {
 private:
   std::array<T, size> fact, inv_fact;

@@ -60,6 +60,32 @@ private:
     return pull(n);
   }
 
+  node *build(const std::vector<T> &a) {
+    std::vector<node *> st;
+    st.reserve(a.size());
+    node *root = nullptr;
+    for (const T &x : a) {
+      node *cur = new node(x);
+      node *prev = nullptr;
+      while (!st.empty() && st.back()->p < cur->p) {
+        prev = st.back();
+        st.pop_back();
+        pull(prev);
+      }
+      cur->l = prev;
+      if (!st.empty()) {
+        st.back()->r = cur;
+      } else {
+        root = cur;
+      }
+      st.push_back(cur);
+    }
+    for (int i = st.size() - 1; i >= 0; --i) {
+      pull(st[i]);
+    }
+    return root;
+  }
+
   std::pair<node *, node *> split(node *n, int64_t i) {
     if (!n) {
       return {nullptr, nullptr};
@@ -118,6 +144,7 @@ private:
 
 public:
   treap() : root(nullptr) {}
+  treap(const std::vector<T> &a) { root = build(a); }
   treap(const treap &) = delete;
   treap &operator=(const treap &) = delete;
   treap(treap &&) noexcept = default;
@@ -131,6 +158,16 @@ public:
   /// @param i The index to insert at. If anything's already at this index, it's moved ahead.
   /// @param x The element to insert.
   void insert(std::size_t i, const T &x) { root = insert(root, i, x); }
+
+  /// @brief Inserts all the elements in `a` at the `i`-th index in the treap.
+  /// @param x The index to insert at. If anything's already at this index, it's moved ahead.
+  /// @param a The elements to insert.
+  void insert(int64_t i, const std::vector<T> &a) {
+    treap r = split(i - 1);
+    treap vals(a);
+    merge(vals);
+    merge(r);
+  }
 
   /// @brief Erases the `i`-th element.
   /// @param i The index whose element needs to be erased.

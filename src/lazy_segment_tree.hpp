@@ -1,43 +1,14 @@
 #pragma once
 
 #include "internal_lazy_segment_tree.hpp"
+#include "lazy_op.hpp"
 
 namespace algo {
-
-template <typename traits, typename T, typename F>
-concept has_set_trait = requires(T &a, const F &f, int len) {
-  { traits::set(a, f, len) };
-};
-
 template <typename T, typename F = T, typename traits = lazy_traits<T, F>>
 class lazy_add_set_segment_tree {
 private:
-  struct lazy_op {
-    F x, set;
-    bool has_set;
-    lazy_op() : x(F{}), set(F{}), has_set(false) {}
-    lazy_op(F x, F set, bool has_set) : x(x), set(set), has_set(has_set) {}
-    lazy_op operator+(const lazy_op &o) const {
-      if (o.has_set) {
-        return o;
-      }
-      if (has_set) {
-        return {F{}, set + o.x, true};
-      }
-      return {x + o.x, F{}, false};
-    }
-  };
-
-  struct combine {
-    static void apply(T &a, const lazy_op &f, int len) {
-      if (f.has_set) {
-        traits::set(a, f.set, len);
-      } else {
-        traits::apply(a, f.x, len);
-      }
-    }
-  };
-
+  using lazy_op = internal::lazy_add_set_op<F>;
+  using combine = internal::lazy_add_set_combine<T, F, traits>;
   internal::lazy_segment_tree<T, lazy_op, combine> st;
 
 public:

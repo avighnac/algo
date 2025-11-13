@@ -30,7 +30,7 @@ private:
     }
   }
 
-  int64_t s(node *n) { return n ? n->s : 0; }
+  int64_t s(node *n) const { return n ? n->s : 0; }
   T a(node *n) { return n ? n->a : T{}; }
 
   void flip(node *n) {
@@ -49,7 +49,7 @@ private:
     }
   }
 
-  void push(node *n) {
+  void pull_rev(node *n) {
     if (!n) {
       return;
     }
@@ -58,7 +58,15 @@ private:
       flip(n->l);
       flip(n->r);
       n->rev = false;
+      traits::reverse(n->a);
     }
+  }
+
+  void push(node *n) {
+    if (!n) {
+      return;
+    }
+    pull_rev(n);
     __apply(n->l, n->t);
     __apply(n->r, n->t);
     n->t = F{};
@@ -68,9 +76,37 @@ private:
     if (!n) {
       return n;
     }
+    pull_rev(n->l);
+    pull_rev(n->r);
     n->s = s(n->l) + s(n->r) + 1;
     n->a = a(n->l) + n->x + a(n->r);
     return n;
+  }
+
+  node *build(const std::vector<T> &a) {
+    std::vector<node *> st;
+    st.reserve(a.size());
+    node *root = nullptr;
+    for (const T &x : a) {
+      node *cur = new node(x);
+      node *prev = nullptr;
+      while (!st.empty() && st.back()->p < cur->p) {
+        prev = st.back();
+        st.pop_back();
+        pull(prev);
+      }
+      cur->l = prev;
+      if (!st.empty()) {
+        st.back()->r = cur;
+      } else {
+        root = cur;
+      }
+      st.push_back(cur);
+    }
+    for (int i = st.size() - 1; i >= 0; --i) {
+      pull(st[i]);
+    }
+    return root;
   }
 
   std::pair<node *, node *> split(node *n, int64_t i) { // split into [0...i] [i+1,n-1]
@@ -161,6 +197,7 @@ private:
 
 public:
   lazy_treap() : root(nullptr) {}
+  lazy_treap(const std::vector<T> &a) { root = build(a); }
   lazy_treap(const lazy_treap &) = delete;
   lazy_treap &operator=(const lazy_treap &) = delete;
   lazy_treap(lazy_treap &&) noexcept = default;
@@ -174,6 +211,16 @@ public:
   /// @param i The index to insert at. If anything's already at this index, it's moved ahead.
   /// @param x The element to insert.
   void insert(std::size_t i, const T &x) { root = insert(root, i, x); }
+
+  /// @brief Inserts all the elements in `a` at the `i`-th index in the treap.
+  /// @param x The index to insert at. If anything's already at this index, it's moved ahead.
+  /// @param a The elements to insert.
+  void insert(int64_t i, const std::vector<T> &a) {
+    lazy_treap r = split(i - 1);
+    lazy_treap vals(a);
+    merge(vals);
+    merge(r);
+  }
 
   /// @brief Erases the `i`-th element.
   /// @param i The index whose element needs to be erased.
@@ -206,7 +253,7 @@ public:
   lazy_treap split(std::size_t i) {
     auto [l, r] = split(root, i);
     root = l;
-    return treap(r);
+    return lazy_treap(r);
   }
 
   /// @brief Merges `other` into this treap.
