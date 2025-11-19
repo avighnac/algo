@@ -20,6 +20,7 @@
 #include "combi.hpp"
 
 #include "dsu.hpp"
+#include "dsu_with_rollbacks.hpp"
 #include "treap.hpp"
 
 #include "convolute.hpp"

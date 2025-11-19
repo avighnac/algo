@@ -178,7 +178,7 @@ public:
       /// @param k The number of edges to traverse upward.
       /// @return The aggregated value under monoid `M` along the path of `k` edges
       /// from `u` toward its ancestor at depth `depth[u] - k`.
-      M accum(const T &u, int k) const {
+      M accum(T u, int k) const {
         M ans = {};
         for (int bt = 0; bt < binary_lift_size; ++bt) {
           if (k & 1 << bt) {
