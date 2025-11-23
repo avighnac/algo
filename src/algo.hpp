@@ -6,6 +6,7 @@
 #include "segment_tree.hpp"
 #include "sparse_segment_tree.hpp"
 #include "fenwick_tree.hpp"
+#include "nd_fenwick_tree.hpp"
 #include "lazy_segment_tree.hpp"
 
 #include "dense_map.hpp"

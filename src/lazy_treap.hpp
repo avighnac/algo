@@ -13,6 +13,9 @@ private:
 
 public:
   lazy_add_set_treap() : treap() {}
+  lazy_add_set_treap(const std::vector<T> &a) : treap(a) {}
+  lazy_add_set_treap(std::size_t n, const T &x) : treap(n, x) {}
+  lazy_add_set_treap(std::size_t n) : treap(n) {}
 
   void add(std::size_t l, std::size_t r, F x) {
     treap.apply(l, r, {x, F{}, false});

@@ -3,10 +3,13 @@
 #include <vector>
 
 namespace algo {
+template <typename T, int d>
+class fenwick_tree;
+
 /// @brief A Fenwick tree supporting prefix accumulation.
 /// @tparam T Any associative and commutative type with an identity element and a defined `operator+`.
 template <typename T>
-class fenwick_tree {
+class fenwick_tree<T, 1> {
 private:
   std::size_t n;
   std::vector<T> f;

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include <numeric>
 
 namespace algo {
@@ -9,58 +8,32 @@ namespace algo {
 template <typename T>
 class sparse_segment_tree {
 private:
-  int64_t l_m, r_m, m_m;
-  T val_m;
+  int64_t s, e, m;
+  T val;
 
-  std::unique_ptr<sparse_segment_tree> left_m, right_m;
-
-  std::unique_ptr<sparse_segment_tree> &left() {
-    if (!left_m) {
-      left_m = std::make_unique<sparse_segment_tree>(l_m, m_m);
-    }
-    return left_m;
-  }
-
-  std::unique_ptr<sparse_segment_tree> &right() {
-    if (!right_m) {
-      right_m = std::make_unique<sparse_segment_tree>(m_m + 1, r_m);
-    }
-    return right_m;
-  }
-
-  struct accessor {
-    sparse_segment_tree &st;
-    int64_t i;
-    accessor(sparse_segment_tree &st, int64_t i) : st(st), i(i) {}
-    accessor &operator=(const T &x) {
-      st.set(i, x);
-      return *this;
-    }
-    accessor &operator+=(const T &x) { return *this = st.at(i) + x; }
-    accessor &operator-=(const T &x) { return *this = st.at(i) - x; }
-    operator T() const { return st.at(i); }
-    friend std::ostream &operator<<(std::ostream &os, const accessor &acc) {
-      return os << T(acc);
-    }
-  };
+  sparse_segment_tree *left, *right;
 
 public:
-  sparse_segment_tree(const int64_t &l, const int64_t &r) : l_m(l), r_m(r), m_m(std::midpoint(l_m, r_m)), val_m(T{}) {}
-  sparse_segment_tree(const std::size_t &n) : l_m(0), r_m(n - 1), m_m(std::midpoint(l_m, r_m)), val_m(T{}) {}
+  sparse_segment_tree(int64_t l, int64_t r) : s(l), e(r), m(std::midpoint(s, e)), val(T{}), left(nullptr), right(nullptr) {}
+  sparse_segment_tree(std::size_t n) : s(0), e(n - 1), m((n - 1) / 2), val(T{}), left(nullptr), right(nullptr) {}
+  ~sparse_segment_tree() {
+    delete left;
+    delete right;
+  }
 
   /// @brief Sets the value at the `i`-th index to `x`.
   /// @param i The index at which the value is being modified.
   /// @param x The new value at that index.
   T set(int64_t i, const T &x) {
-    if (l_m == r_m) {
-      return val_m = x;
+    if (s == e) {
+      return val = x;
     }
-    if (i <= m_m) {
-      val_m = left()->set(i, x) + (right_m ? right_m->val_m : T{});
+    if (i <= m) {
+      val = (left = left ? left : new sparse_segment_tree(s, m))->set(i, x) + (right ? right->val : T{});
     } else {
-      val_m = (left_m ? left_m->val_m : T{}) + right()->set(i, x);
+      val = (left ? left->val : T{}) + (right = right ? right : new sparse_segment_tree(m + 1, e))->set(i, x);
     }
-    return val_m;
+    return val;
   }
 
   /// @brief Finds the smallest index i ≥ l such that the predicate returns
@@ -73,22 +46,22 @@ public:
   /// If pred is true for all i ∈ [l, r], returns r + 1.
   template <typename Fn>
   int64_t min_right(int64_t l, Fn &&t, T p = T{}) const {
-    if (r_m < l) {
-      return r_m + 1;
+    if (e < l) {
+      return e + 1;
     }
-    if (l_m == r_m) {
-      return t(p + val_m) ? r_m + 1 : l_m;
+    if (s == e) {
+      return t(p + val) ? e + 1 : s;
     }
-    if (l <= m_m) {
-      if (left_m) {
-        int64_t i = left_m->min_right(l, t, p);
-        if (i <= m_m) {
+    if (l <= m) {
+      if (left) {
+        int64_t i = left->min_right(l, t, p);
+        if (i <= m) {
           return i;
         }
-        p = p + left_m->val_m;
+        p = p + left->val;
       }
     }
-    return right_m ? right_m->min_right(l, t, p) : r_m + 1;
+    return right ? right->min_right(l, t, p) : e + 1;
   }
 
   /// @brief Performs associative accumulation.
@@ -96,22 +69,20 @@ public:
   /// @param r The right endpoint (inclusive) of the range to accumulate.
   /// @return Returns the accumulated result of [l, r].
   T query(int64_t l, int64_t r) const {
-    if (r < l_m || l > r_m) {
+    if (r < s || l > e) {
       return T{};
     }
-    if (l <= l_m && r_m <= r) {
-      return val_m;
+    if (l <= s && e <= r) {
+      return val;
     }
-    return (left_m ? left_m->query(l, r) : T{}) + (right_m ? right_m->query(l, r) : T{});
+    return (left ? left->query(l, r) : T{}) + (right ? right->query(l, r) : T{});
   }
 
-  std::size_t size() const { return r_m - l_m + 1; }
+  std::size_t size() const { return e - s + 1; }
 
   /// @brief Returns the value at index `i`.
   /// @param i The index to access.
   /// @return The element at position `i` in the segment tree.
   T at(int64_t i) const { return query(i, i); }
-
-  accessor operator[](int64_t i) { return accessor(*this, i); }
 };
 } // namespace algo

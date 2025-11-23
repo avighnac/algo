@@ -198,6 +198,14 @@ private:
 public:
   lazy_treap() : root(nullptr) {}
   lazy_treap(const std::vector<T> &a) { root = build(a); }
+  lazy_treap(std::size_t n, const T &x) {
+    std::vector<T> a(n, x);
+    root = build(a);
+  }
+  lazy_treap(std::size_t n) {
+    std::vector<T> a(n);
+    root = build(a);
+  }
   lazy_treap(const lazy_treap &) = delete;
   lazy_treap &operator=(const lazy_treap &) = delete;
   lazy_treap(lazy_treap &&) noexcept = default;
