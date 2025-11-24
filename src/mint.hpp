@@ -28,22 +28,22 @@ public:
   /// @note Requires `mod` to be prime.
   mint inv() const { return pow(mod - 2); }
 
-  mint &operator+=(const mint &other) { return x = (x + other.x) % mod, *this; }
-  mint &operator-=(const mint &other) { return x = (x - other.x + mod) % mod, *this; }
-  mint &operator*=(const mint &other) { return x = (x * other.x) % mod, *this; }
-  mint &operator/=(const mint &other) { return *this *= other.inv(); }
+  mint &operator+=(const mint &r) { return x = (x + r.x) % mod, *this; }
+  mint &operator-=(const mint &r) { return x = (x - r.x + mod) % mod, *this; }
+  mint &operator*=(const mint &r) { return x = (x * r.x) % mod, *this; }
+  mint &operator/=(const mint &r) { return *this *= r.inv(); }
 
-  mint operator+(const mint &other) const { return mint{*this} += other; }
-  mint operator-(const mint &other) const { return mint{*this} -= other; }
-  mint operator*(const mint &other) const { return mint{*this} *= other; }
-  mint operator/(const mint &other) const { return mint{*this} /= other; }
+  mint operator+(const mint &r) const { return mint{*this} += r; }
+  mint operator-(const mint &r) const { return mint{*this} -= r; }
+  mint operator*(const mint &r) const { return mint{*this} *= r; }
+  mint operator/(const mint &r) const { return mint{*this} /= r; }
 
   friend std::ostream &operator<<(std::ostream &os, const mint &x) {
     return os << x.x;
   }
 
-  bool operator==(const mint &other) const { return x == other.x; }
-  bool operator!=(const mint &other) const { return !(*this == other); }
+  bool operator==(const mint &r) const { return x == r.x; }
+  bool operator!=(const mint &r) const { return !(*this == r); }
 
   operator int64_t() const { return x; }
 };
