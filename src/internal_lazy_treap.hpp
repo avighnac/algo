@@ -257,7 +257,6 @@ public:
   /// @brief Splits the treap at index `i`, keeping the left part in this treap.
   /// @param i The split index (0-based). Elements `[0, i]` remain here; elements `(i, end]` go to the returned treap.
   /// @return A new treap containing all elements after index `i`.
-  /// @warning The returned treap owns its nodes; modifying either treap invalidates iterators into the other.
   lazy_treap split(std::size_t i) {
     auto [l, r] = split(root, i);
     root = l;
@@ -266,7 +265,6 @@ public:
 
   /// @brief Merges `other` into this treap.
   /// @param other Another treap. After the call, it becomes empty.
-  /// @note `other` can be safely reused or destroyed; it simply holds no elements after this.
   void merge(lazy_treap &other) {
     root = merge(root, other.root);
     other.root = nullptr;

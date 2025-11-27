@@ -13,6 +13,7 @@
 #include "serialized_array.hpp"
 #include "traits.hpp"
 #include "point.hpp"
+#include "line.hpp"
 #include "generic_graph.hpp"
 #include "graph.hpp"
 #include "tree.hpp"
@@ -27,3 +28,5 @@
 #include "convolute.hpp"
 
 #include "matrix.hpp"
+
+#include "sparse_lichao_tree.hpp"
