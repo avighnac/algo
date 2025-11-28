@@ -2,14 +2,17 @@
 
 #include "internal_lazy_segment_tree.hpp"
 #include "lazy_op.hpp"
+#include "proxy.hpp"
 
 namespace algo {
-template <typename T, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
 class lazy_add_set_segment_tree {
 private:
   using lazy_op = internal::lazy_add_set_op<F>;
   using combine = internal::lazy_add_set_combine<T, F, traits>;
-  internal::lazy_segment_tree<T, lazy_op, combine> st;
+  using reference = internal::proxy_ref<lazy_add_set_segment_tree, T>;
+
+  internal::lazy_segment_tree<T, f, base, lazy_op, combine> st;
 
 public:
   lazy_add_set_segment_tree(std::size_t _n) : st(_n) {}
@@ -35,19 +38,23 @@ public:
   }
 
   T at(std::size_t i) { return st.query(i, i); }
+  reference operator[](std::size_t i) { return reference(this, i); }
+  reference front() { return reference(this, 0); }
+  reference back() { return reference(this, size() - 1); }
 
   std::size_t size() const { return st.size(); }
+
+  using iterator = internal::iterator<reference, lazy_add_set_segment_tree>;
+
+  iterator begin() { return iterator(this, 0); }
+  iterator end() { return iterator(this, size()); }
 };
 
 /// @brief A generic lazy segment tree supporting range updates and queries.
-/// @tparam T Value type (e.g. `int64_t` for range sum, `algo::min_t<int>` for range min). Must define `operator+`.
-/// @tparam F Lazy type (e.g. `int` for range add). Must define `operator+`.
-/// @tparam traits A struct that must define `static void apply(T &a, const F &f, int len)`;
-/// optionally, defining `static void set(T &a, const F &f, int len)` enables range assignment updates.
-template <typename T, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
 using lazy_segment_tree =
     std::conditional_t<
         has_set_trait<traits, T, F>,
-        lazy_add_set_segment_tree<T, F, traits>,
-        internal::lazy_segment_tree<T, F, traits>>;
+        lazy_add_set_segment_tree<T, f, base, F, traits>,
+        internal::lazy_segment_tree<T, f, base, F, traits>>;
 } // namespace algo

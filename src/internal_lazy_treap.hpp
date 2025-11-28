@@ -1,12 +1,13 @@
 #pragma once
 
 #include "lazy_traits.hpp"
+#include "monoid.hpp"
 #include <random>
 #include <utility>
 
 namespace algo {
 namespace internal {
-template <typename T, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
 class lazy_treap {
 private:
   static inline std::mt19937 gen{std::random_device{}()};
@@ -20,6 +21,14 @@ private:
     node(const T &_x) : s(1), p(gen()), l(nullptr), r(nullptr), x(_x), a(_x), t(F{}), rev(false) {}
   };
 
+  T op(const T &a, const T &b) const {
+    if constexpr (std::is_same_v<std::invoke_result_t<f &, T, T>, bool>) {
+      return f{}(a, b) ? a : b;
+    } else {
+      return f{}(a, b);
+    }
+  }
+
   node *root;
 
   void destruct(node *n) {
@@ -31,7 +40,7 @@ private:
   }
 
   int64_t s(node *n) const { return n ? n->s : 0; }
-  T a(node *n) { return n ? n->a : T{}; }
+  T a(node *n) { return n ? n->a : base; }
 
   void flip(node *n) {
     if (n) {
@@ -79,7 +88,7 @@ private:
     pull_rev(n->l);
     pull_rev(n->r);
     n->s = s(n->l) + s(n->r) + 1;
-    n->a = a(n->l) + n->x + a(n->r);
+    n->a = op(op(a(n->l), n->x), a(n->r));
     return n;
   }
 
@@ -208,21 +217,21 @@ public:
   }
   lazy_treap(const lazy_treap &) = delete;
   lazy_treap &operator=(const lazy_treap &) = delete;
-  lazy_treap(lazy_treap &&) noexcept = default;
-  lazy_treap &operator=(lazy_treap &&) noexcept = default;
+  lazy_treap(lazy_treap &&other) noexcept
+      : root(std::exchange(other.root, nullptr)) {}
+  lazy_treap &operator=(lazy_treap &&other) noexcept {
+    if (this != &other) {
+      destruct(root);
+      root = std::exchange(other.root, nullptr);
+    }
+    return *this;
+  }
   ~lazy_treap() { destruct(root); }
 
-  /// @brief Returns the current size of the treap.
   std::size_t size() const { return s(root); }
+  bool empty() const { return size() == 0; }
 
-  /// @brief Inserts `x` at the `i`-th index in the treap.
-  /// @param i The index to insert at. If anything's already at this index, it's moved ahead.
-  /// @param x The element to insert.
   void insert(std::size_t i, const T &x) { root = insert(root, i, x); }
-
-  /// @brief Inserts all the elements in `a` at the `i`-th index in the treap.
-  /// @param x The index to insert at. If anything's already at this index, it's moved ahead.
-  /// @param a The elements to insert.
   void insert(int64_t i, const std::vector<T> &a) {
     lazy_treap r = split(i - 1);
     lazy_treap vals(a);
@@ -230,60 +239,43 @@ public:
     merge(r);
   }
 
-  /// @brief Erases the `i`-th element.
-  /// @param i The index whose element needs to be erased.
   void erase(std::size_t i) { root = erase(root, i); }
 
-  /// @brief Returns the element at the `i`-th location.
   T at(std::size_t i) { return at(root, i); }
 
-  /// @brief Applies a lazy operation over a range.
-  /// @param l The starting index.
-  /// @param r The ending index.
-  /// @param x The lazy operation to apply to all elements in [l, r].
+  T back() { return at(size() - 1); }
+
   void apply(std::size_t l, std::size_t r, const F &x)
     requires(!std::is_void_v<traits>)
-  { _apply(l, r, x); }
+  {
+    _apply(l, r, x);
+  }
   void apply(std::size_t i, const F &x)
     requires(!std::is_void_v<traits>)
-  { apply(i, i, x); }
+  {
+    apply(i, i, x);
+  }
 
-  /// @brief Returns the accumulated value over the range [l, r].
-  /// @param l The starting (inclusive) index of the range.
-  /// @param r The ending (inclusive) index of the range.
-  /// @return The aggregate of all elements in the range [l, r].
   T query(std::size_t l, std::size_t r) { return _query(l, r); }
 
-  /// @brief Splits the treap at index `i`, keeping the left part in this treap.
-  /// @param i The split index (0-based). Elements `[0, i]` remain here; elements `(i, end]` go to the returned treap.
-  /// @return A new treap containing all elements after index `i`.
   lazy_treap split(std::size_t i) {
     auto [l, r] = split(root, i);
     root = l;
     return lazy_treap(r);
   }
 
-  /// @brief Merges `other` into this treap.
-  /// @param other Another treap. After the call, it becomes empty.
   void merge(lazy_treap &other) {
     root = merge(root, other.root);
     other.root = nullptr;
   }
   void merge(lazy_treap &&other) { merge(other); }
 
-  /// @brief Cuts out the range [l, r] from the treap and returns it. Note that the treap this is called on is modified.
-  /// @param l The starting index of the range.
-  /// @param r The ending index of the range.
-  /// @return A treap containing the elements in [l, r].
   lazy_treap cut(int64_t l, int64_t r) {
     auto s1 = split(l - 1);
     merge(s1.split(r - l));
     return s1;
   }
 
-  /// @brief Reverses the order of elements in the range [l, r], modifying the treap in place.
-  /// @param l The starting index.
-  /// @param r The ending index.
   void reverse(std::size_t l, std::size_t r) { _reverse(l, r); }
 };
 } // namespace internal

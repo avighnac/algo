@@ -2,7 +2,6 @@
 
 #include <numeric>
 #include <optional>
-#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -90,6 +89,7 @@ public:
   ~sparse_lichao_tree() { destroy(t); }
 
   void add(int_t l, int_t r, const _T &x) { add(t, T{x}, l, r); }
+  void add(const _T &x) { add(t, T{x}, t->L, t->R); }
   std::optional<_T> query(int_t x) const {
     T ans = query(t, x);
     if (ans.active) {

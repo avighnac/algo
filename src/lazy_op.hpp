@@ -30,6 +30,7 @@ struct lazy_add_set_combine {
       traits::apply(a, f.x, len);
     }
   }
+  static void reverse(T &a) {}
 };
 } // namespace internal
 } // namespace algo

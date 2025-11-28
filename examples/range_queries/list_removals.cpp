@@ -15,7 +15,7 @@ int main() {
     std::cin >> x;
     int idx = st.min_right(0, [&](int tot) { return tot < x; });
     std::cout << a[idx] << ' ';
-    st[idx] -= 1;
+    --st[idx];
   }
   std::cout << '\n';
 }

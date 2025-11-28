@@ -1,7 +1,7 @@
-#include "../../src/internal_lazy_treap.hpp"
+#include "../../src/lazy_treap.hpp"
 #include <iostream>
 
-using algo::internal::lazy_treap;
+using algo::lazy_treap;
 
 int main() {
   std::ios::sync_with_stdio(false);

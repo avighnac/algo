@@ -7,9 +7,8 @@ int main() {
   int n, q;
   std::cin >> n >> q;
   segment_tree<int64_t> st(n + 1);
-  for (int i = 1, x; i <= n; ++i) {
-    std::cin >> x;
-    st[i] = x;
+  for (int i = 1; i <= n; ++i) {
+    std::cin >> st[i];
   }
   while (q--) {
     int type;

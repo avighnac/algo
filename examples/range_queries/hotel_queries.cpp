@@ -6,10 +6,9 @@ using namespace algo;
 int main() {
   int n, m;
   std::cin >> n >> m;
-  segment_tree<max_t<int>> st(n);
-  for (int i = 0, x; i < n; ++i) {
-    std::cin >> x;
-    st[i] = x;
+  segment_tree<int, std::greater<>> st(n);
+  for (auto &i : st) {
+    std::cin >> i;
   }
   while (m--) {
     int x;

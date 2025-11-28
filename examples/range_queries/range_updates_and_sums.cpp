@@ -11,9 +11,8 @@ int main() {
   std::cin >> n >> q;
 
   lazy_segment_tree<int64_t> st(n);
-  for (int i = 0, x; i < n; ++i) {
-    std::cin >> x;
-    st.set(i, x);
+  for (auto &i : st) {
+    std::cin >> i;
   }
 
   while (q--) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "traits.hpp"
+#include "old_traits.hpp"
 #include <limits>
 #include <ostream>
 

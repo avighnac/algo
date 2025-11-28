@@ -1,18 +1,27 @@
 #pragma once
 
 #include "lazy_traits.hpp"
+#include "monoid.hpp"
 #include <bit>
 #include <vector>
 
 namespace algo {
 namespace internal {
-template <typename T, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
 class lazy_segment_tree {
 private:
   std::size_t _n, n;
   int h;
   std::vector<T> seg;
   std::vector<F> tag;
+
+  T op(const T &a, const T &b) const {
+    if constexpr (std::is_same_v<std::invoke_result_t<f &, T, T>, bool>) {
+      return f{}(a, b) ? a : b;
+    } else {
+      return f{}(a, b);
+    }
+  }
 
   void push(std::size_t i, std::size_t len) {
     len >>= 1;
@@ -26,7 +35,7 @@ private:
   }
 
   void pull(std::size_t i) {
-    seg[i] = seg[2 * i] + seg[2 * i + 1];
+    seg[i] = op(seg[2 * i], seg[2 * i + 1]);
   }
 
   void push_all(std::size_t l, std::size_t r) {
@@ -67,7 +76,7 @@ public:
       seg[n + i] = vals[i];
     }
     for (std::size_t i = n - 1; i > 0; --i) {
-      seg[i] = seg[2 * i] + seg[2 * i + 1];
+      seg[i] = op(seg[2 * i], seg[2 * i + 1]);
     }
     tag.assign(n, F{});
   }
@@ -89,15 +98,15 @@ public:
 
   T query(std::size_t l, std::size_t r) {
     push_all(l += n, r += n + 1);
-    T ans_l = T{}, ans_r = T{};
+    T ans_l = base, ans_r = base;
     for (std::size_t i = l, j = r; i < j; i >>= 1, j >>= 1) {
       if (i & 1)
-        ans_l = ans_l + seg[i++];
+        ans_l = op(ans_l, seg[i++]);
       if (j & 1)
-        ans_r = seg[--j] + ans_r;
+        ans_r = op(seg[--j], ans_r);
     }
     pull_all(l, r);
-    return ans_l + ans_r;
+    return op(ans_l, ans_r);
   }
 
   T at(std::size_t i) { return query(i, i); }
