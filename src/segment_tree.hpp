@@ -11,7 +11,7 @@
 
 namespace algo {
 /// @brief An iterative segment tree with a fixed size.
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x>
+template <typename T, typename f = std::plus<>, typename Id = monoid_identity<T, f>>
 class segment_tree {
 private:
   std::size_t _n, n;
@@ -25,10 +25,12 @@ private:
     }
   }
 
+  T base() const { return Id{}(); }
+
   using reference = internal::proxy_ref<segment_tree, T>;
 
 public:
-  segment_tree(std::size_t _n) : _n(_n), n(std::bit_ceil(_n)), seg(2 * n, base) {}
+  segment_tree(std::size_t _n) : _n(_n), n(std::bit_ceil(_n)), seg(2 * n, base()) {}
   segment_tree(const segment_tree &other) : _n(other._n), n(other.n), seg(other.seg) {}
   segment_tree() : _n(0), n(0) {}
   segment_tree(std::size_t _n, const T &x) : _n(_n), n(std::bit_ceil(_n)), seg(2 * n) {
@@ -44,7 +46,7 @@ public:
   segment_tree(It first, It last) {
     _n = std::distance(first, last);
     n = std::bit_ceil(_n);
-    seg.assign(2 * n, base);
+    seg.assign(2 * n, base());
     std::copy(first, last, seg.begin() + n);
     for (std::size_t i = n - 1; i > 0; --i) {
       seg[i] = op(seg[2 * i], seg[2 * i + 1]);
@@ -79,7 +81,7 @@ public:
   /// @param r The right endpoint (inclusive) of the range to accumulate.
   /// @return Returns the accumulated result of [l, r].
   T query(std::size_t l, std::size_t r) const {
-    T ans_l = base, ans_r = base;
+    T ans_l = base(), ans_r = base();
     for (l += n, r += n + 1; l < r; l /= 2, r /= 2) {
       if (l & 1)
         ans_l = op(ans_l, seg[l++]);
@@ -99,7 +101,7 @@ public:
   /// If `t` is true for all r ∈ [l, n), returns n.
   template <typename Fn>
   std::size_t min_right(std::size_t l, Fn &&t) const {
-    T p = base;
+    T p = base();
     for (l += n; t(op(p, seg[l])) && l & (l + 1); l /= 2) {
       if (l & 1)
         p = op(p, seg[l++]);

@@ -9,28 +9,40 @@
 #include <type_traits>
 #include <vector>
 
+#if defined(__AVX2__) && defined(__x86_64__)
+#include "experimental/ntt998244353.hpp"
+#endif
+
 namespace algo {
 namespace internal {
 using complex = std::complex<double>;
 constexpr inline double pi = std::numbers::pi;
 
-unsigned bit_reverse(unsigned x, int bits) {
-  unsigned r = 0;
-  for (int i = 0; i < bits; ++i) {
-    r = (r << 1) | (x & 1);
-    x >>= 1;
+inline const std::vector<int> &get_rev(int w) {
+  static int last_w = -1;
+  static std::vector<int> rev;
+  if (w != last_w) {
+    last_w = w;
+    rev.resize(1 << w);
+    rev[0] = 0;
+    for (int i = 1; i < 1 << w; ++i) {
+      // i = (i >> 1), append (i & 1)
+      // rev(i) = (i & 1), append rev(i >> 1)
+      rev[i] = ((i & 1) << (w - 1)) | (rev[i >> 1] >> 1);
+    }
   }
-  return r;
+  return rev;
 }
 
 void fft(std::vector<complex> &a, bool inv) {
   const int _n = a.size();
   const int w = std::bit_width(a.size()) - 1;
-  std::vector<complex> b(_n);
+  const auto &rev = get_rev(w);
   for (int i = 0; i < _n; ++i) {
-    b[i] = a[bit_reverse(i, w)];
+    if (i < rev[i]) {
+      std::swap(a[i], a[rev[i]]);
+    }
   }
-  a = b;
   for (int n = 2; n <= _n; n <<= 1) {
     complex base = std::polar(1.0, (inv ? -2 : 2) * pi / n);
     for (int i = 0; i < _n; i += n) {
@@ -60,24 +72,44 @@ struct ntt_traits<998244353> {
 };
 
 template <int64_t mod>
+const std::array<mint<mod>, ntt_traits<mod>::p + 1> &get_roots() {
+  static const std::array<mint<mod>, ntt_traits<mod>::p + 1> roots = [] {
+    std::array<mint<mod>, ntt_traits<mod>::p + 1> r{};
+    r[ntt_traits<mod>::p] = ntt_traits<mod>::r;
+    for (int i = ntt_traits<mod>::p - 1; i >= 0; --i) {
+      r[i] = r[i + 1] * r[i + 1];
+    }
+    return r;
+  }();
+  return roots;
+}
+
+template <int64_t mod>
+const std::array<mint<mod>, ntt_traits<mod>::p + 1> &get_inv_roots() {
+  static const std::array<mint<mod>, ntt_traits<mod>::p + 1> inv_roots = [] {
+    std::array<mint<mod>, ntt_traits<mod>::p + 1> r{};
+    r[ntt_traits<mod>::p] = mint<mod>(ntt_traits<mod>::r).inv();
+    for (int i = ntt_traits<mod>::p - 1; i >= 0; --i) {
+      r[i] = r[i + 1] * r[i + 1];
+    }
+    return r;
+  }();
+  return inv_roots;
+}
+
+template <int64_t mod>
 void ntt(std::vector<mint<mod>> &a, bool inv) {
   const int _n = a.size();
   const int w = std::bit_width(a.size()) - 1;
-  std::array<mint<mod>, ntt_traits<mod>::p + 1> roots;
-  roots[ntt_traits<mod>::p] = ntt_traits<mod>::r;
-  for (int i = roots.size() - 2; i >= 0; --i) {
-    roots[i] = roots[i + 1] * roots[i + 1];
-  }
-  std::vector<mint<mod>> b(_n);
+  const auto &roots = inv ? get_inv_roots<mod>() : get_roots<mod>();
+  const auto &rev = get_rev(w);
   for (int i = 0; i < _n; ++i) {
-    b[i] = a[bit_reverse(i, w)];
-  }
-  a = b;
-  for (uint32_t n = 2; n <= _n; n <<= 1) {
-    mint<mod> base = roots[std::bit_width(n) - 1];
-    if (inv) {
-      base = base.inv();
+    if (i < rev[i]) {
+      std::swap(a[i], a[rev[i]]);
     }
+  }
+  for (uint32_t n = 2, wd = 1; n <= _n; n <<= 1, ++wd) {
+    mint<mod> base = roots[wd];
     for (int i = 0; i < _n; i += n) {
       mint<mod> w = 1;
       for (int j = 0; j < n / 2; ++j) {
@@ -132,5 +164,38 @@ std::vector<mint<mod>> convolute(std::vector<mint<mod>> a, std::vector<mint<mod>
   internal::ntt(a, true);
   a.resize(_n);
   return a;
+}
+
+template <>
+inline std::vector<mint<998244353>>
+convolute<998244353>(std::vector<mint<998244353>> a, std::vector<mint<998244353>> b) {
+#if defined(__AVX2__) && defined(__x86_64__)
+  std::vector<int> aa(a.size()), bb(b.size());
+  for (int i = 0; i < a.size(); ++i) {
+    aa[i] = a[i];
+  }
+  for (int i = 0; i < b.size(); ++i) {
+    bb[i] = b[i];
+  }
+  std::vector<int> cc = algo::experimental::ntt998244353(aa, bb);
+  std::vector<mint<998244353>> c(cc.size());
+  for (int i = 0; i < cc.size(); ++i) {
+    c[i] = mint<998244353>(cc[i]);
+  }
+  return c;
+#else
+  const uint32_t _n = a.size() + b.size() - 1;
+  const int n = std::bit_ceil(_n);
+  a.resize(n);
+  b.resize(n);
+  internal::ntt(a, false);
+  internal::ntt(b, false);
+  for (int i = 0; i < n; ++i) {
+    a[i] *= b[i];
+  }
+  internal::ntt(a, true);
+  a.resize(_n);
+  return a;
+#endif
 }
 } // namespace algo

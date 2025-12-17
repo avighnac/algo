@@ -5,7 +5,7 @@
 #include "proxy.hpp"
 
 namespace algo {
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
 class lazy_add_set_segment_tree {
 private:
   using lazy_op = internal::lazy_add_set_op<F>;
@@ -51,7 +51,7 @@ public:
 };
 
 /// @brief A generic lazy segment tree supporting range updates and queries.
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
 using lazy_segment_tree =
     std::conditional_t<
         has_set_trait<traits, T, F>,

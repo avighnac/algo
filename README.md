@@ -5,3 +5,5 @@ This repository contains my personal collection of modern C++ utilities for algo
 See the `examples/` directory for usage examples and demonstrations.
 
 **Note**: Most of this code relies on C++20 features and won't compile with earlier standards.
+
+Additionally, I do not claim to have written all of the code under `src/experimental`, and I have given credit to the places I took the code from.

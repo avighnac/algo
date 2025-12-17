@@ -7,7 +7,7 @@
 
 namespace algo {
 namespace internal {
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F>>
+template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
 class lazy_treap {
 private:
   static inline std::mt19937 gen{std::random_device{}()};

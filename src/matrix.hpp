@@ -1,9 +1,11 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 namespace algo {
-template <typename T> class matrix {
+template <typename T>
+class matrix {
 private:
   std::vector<std::vector<T>> m;
 

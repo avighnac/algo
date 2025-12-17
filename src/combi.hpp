@@ -31,13 +31,9 @@ public:
   const T &factorial(const int &n) const { return fact[n]; }
   const T &inv_factorial(const int &n) const { return inv_fact[n]; }
 
-  T perm(const int &n, const int &k) const {
-    return fact[n] * inv_fact[n - k];
-  }
+  T perm(const int &n, const int &k) const { return fact[n] * inv_fact[n - k]; }
 
-  T choose(const int &n, const int &k) const {
-    return fact[n] * inv_fact[k] * inv_fact[n - k];
-  }
+  T choose(const int &n, const int &k) const { return fact[n] * inv_fact[k] * inv_fact[n - k]; }
 
   T catalan(const int &n) const { return choose(2 * n, n) / (n + 1); }
 };

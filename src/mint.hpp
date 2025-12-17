@@ -38,9 +38,7 @@ public:
   mint operator*(const mint &r) const { return mint{*this} *= r; }
   mint operator/(const mint &r) const { return mint{*this} /= r; }
 
-  friend std::ostream &operator<<(std::ostream &os, const mint &x) {
-    return os << x.x;
-  }
+  friend std::ostream &operator<<(std::ostream &os, const mint &x) { return os << x.x; }
 
   bool operator==(const mint &r) const { return x == r.x; }
   bool operator!=(const mint &r) const { return !(*this == r); }

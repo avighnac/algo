@@ -1,29 +1,34 @@
 #pragma once
 
 #include <functional>
+#include <limits>
 
 namespace algo {
-template <typename T, typename f, typename = void>
+
+template <typename T, typename F, typename = void>
 struct monoid_identity;
 
-template <typename T> // a + b
+// a + b
+template <typename T>
 struct monoid_identity<T, std::plus<>, void> {
-  static constexpr T x = T{};
+  T operator()() const { return T{}; }
 };
 
-template <typename T> // min(a, b)
+// min(a, b)
+template <typename T>
 struct monoid_identity<
     T,
     std::less<>,
     std::enable_if_t<std::numeric_limits<T>::is_specialized>> {
-  static constexpr T x = std::numeric_limits<T>::max();
+  T operator()() const { return std::numeric_limits<T>::max(); }
 };
 
-template <typename T> // max(a, b) 
+// max(a, b)
+template <typename T>
 struct monoid_identity<
     T,
     std::greater<>,
     std::enable_if_t<std::numeric_limits<T>::is_specialized>> {
-  static constexpr T x = std::numeric_limits<T>::min();
+  T operator()() const { return std::numeric_limits<T>::min(); }
 };
 } // namespace algo

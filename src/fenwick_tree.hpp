@@ -31,7 +31,7 @@ public:
   /// @return The accumulated prefix from index `0` to index `i`.
   T query(std::size_t i) const {
     T ans = T{};
-    for (++i; i > 0; i -= i & -i) {
+    for (++i; i > 0; i &= i - 1) {
       ans = ans + f[i];
     }
     return ans;

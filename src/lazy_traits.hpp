@@ -1,25 +1,43 @@
 #pragma once
 
 #include "traits.hpp"
+#include <functional>
 
 namespace algo {
+template <typename T, typename F, typename Op>
+struct lazy_traits;
+
 template <typename T, typename F>
-struct lazy_traits {
+struct lazy_traits<T, F, std::plus<>> {
   static void apply(T &a, const F &f, int len) {
-    if constexpr (is_idempotent_v<T>) {
-      a = F{a} + f;
-    } else {
-      a = a + f * len;
-    }
+    a += f * len;
   }
   static void set(T &a, const F &f, int len) {
-    if constexpr (is_idempotent_v<T>) {
-      a = f;
-    } else {
-      a = f * len;
-    }
+    a = f * len;
   }
-  static void reverse(T &a) {}
+  static void reverse(T &) {}
+};
+
+template <typename T, typename F>
+struct lazy_traits<T, F, std::greater<>> {
+  static void apply(T &a, const F &f, int) {
+    a += f;
+  }
+  static void set(T &a, const F &f, int) {
+    a = f;
+  }
+  static void reverse(T &) {}
+};
+
+template <typename T, typename F>
+struct lazy_traits<T, F, std::less<>> {
+  static void apply(T &a, const F &f, int) {
+    a += f;
+  }
+  static void set(T &a, const F &f, int) {
+    a = f;
+  }
+  static void reverse(T &) {}
 };
 
 template <typename traits, typename T, typename F>
