@@ -17,6 +17,7 @@
 #include "generic_graph.hpp"
 #include "graph.hpp"
 #include "tree.hpp"
+#include "sparse_table.hpp" 
 
 #include "mint.hpp"
 #include "combi.hpp"
@@ -24,9 +25,12 @@
 #include "dsu.hpp"
 #include "dsu_with_rollbacks.hpp"
 #include "treap.hpp"
+#include "lazy_treap.hpp"
 
 #include "convolute.hpp"
 
 #include "matrix.hpp"
 
 #include "sparse_lichao_tree.hpp"
+
+#include "bostan_mori.hpp"

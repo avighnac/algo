@@ -13,6 +13,8 @@ public:
   mint(const int64_t &x) : x((x % mod + mod) % mod) {}
   mint() : x(0) {}
 
+  mint operator-() const { return x ? mint(mod - x) : mint(0); }
+
   mint pow(int64_t b) const {
     mint ans = 1, p = x;
     while (b > 0) {

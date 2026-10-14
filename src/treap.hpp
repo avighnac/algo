@@ -112,7 +112,7 @@ private:
     if (!r) {
       return l;
     }
-    if (l->p < r->p) {
+    if (l->p > r->p) {
       l->r = merge(l->r, r);
       return pull(l);
     }

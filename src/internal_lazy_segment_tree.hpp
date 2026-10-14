@@ -7,7 +7,7 @@
 
 namespace algo {
 namespace internal {
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
+template <typename T, typename f = std::plus<>, typename Id = monoid_identity<T, f>, typename F = T, typename traits = lazy_traits<T, F, f>>
 class lazy_segment_tree {
 private:
   std::size_t _n, n;
@@ -98,7 +98,7 @@ public:
 
   T query(std::size_t l, std::size_t r) {
     push_all(l += n, r += n + 1);
-    T ans_l = base, ans_r = base;
+    T ans_l = Id{}(), ans_r = Id{}();
     for (std::size_t i = l, j = r; i < j; i >>= 1, j >>= 1) {
       if (i & 1)
         ans_l = op(ans_l, seg[i++]);

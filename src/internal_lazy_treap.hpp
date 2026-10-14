@@ -7,7 +7,7 @@
 
 namespace algo {
 namespace internal {
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
+template <typename T, typename f = std::plus<>, typename Id = monoid_identity<T, f>, typename F = T, typename traits = lazy_traits<T, F, f>>
 class lazy_treap {
 private:
   static inline std::mt19937 gen{std::random_device{}()};
@@ -40,7 +40,7 @@ private:
   }
 
   int64_t s(node *n) const { return n ? n->s : 0; }
-  T a(node *n) { return n ? n->a : base; }
+  T a(node *n) { return n ? n->a : Id{}(); }
 
   void flip(node *n) {
     if (n) {
@@ -145,7 +145,7 @@ private:
     if (!r) {
       return l;
     }
-    if (l->p < r->p) {
+    if (l->p > r->p) {
       push(l);
       l->r = merge(l->r, r);
       return pull(l);

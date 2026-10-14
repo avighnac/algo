@@ -5,14 +5,14 @@
 #include "proxy.hpp"
 
 namespace algo {
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
+template <typename T, typename f = std::plus<>, typename Id = monoid_identity<T, f>, typename F = T, typename traits = lazy_traits<T, F, f>>
 class lazy_add_set_segment_tree {
 private:
   using lazy_op = internal::lazy_add_set_op<F>;
   using combine = internal::lazy_add_set_combine<T, F, traits>;
   using reference = internal::proxy_ref<lazy_add_set_segment_tree, T>;
 
-  internal::lazy_segment_tree<T, f, base, lazy_op, combine> st;
+  internal::lazy_segment_tree<T, f, Id, lazy_op, combine> st;
 
 public:
   lazy_add_set_segment_tree(std::size_t _n) : st(_n) {}
@@ -51,10 +51,10 @@ public:
 };
 
 /// @brief A generic lazy segment tree supporting range updates and queries.
-template <typename T, typename f = std::plus<>, T base = monoid_identity<T, f>::x, typename F = T, typename traits = lazy_traits<T, F, f>>
+template <typename T, typename f = std::plus<>, typename Id = monoid_identity<T, f>, typename F = T, typename traits = lazy_traits<T, F, f>>
 using lazy_segment_tree =
     std::conditional_t<
         has_set_trait<traits, T, F>,
-        lazy_add_set_segment_tree<T, f, base, F, traits>,
-        internal::lazy_segment_tree<T, f, base, F, traits>>;
+        lazy_add_set_segment_tree<T, f, Id, F, traits>,
+        internal::lazy_segment_tree<T, f, Id, F, traits>>;
 } // namespace algo
